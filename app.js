@@ -15,9 +15,7 @@ let roomStats = [];
 
 const getCurrentTimeInTRT = () => moment().tz('Europe/Istanbul').format();
 
-io.on('connection', (socket) => {
-    const domain = socket.handshake.headers.origin;
-
+const findOrCreateRoom = (domain) => {
     let room = roomStats.find(r => r.domain === domain);
     if (!room) {
         room = {
@@ -28,6 +26,20 @@ io.on('connection', (socket) => {
         };
         roomStats.push(room);
     }
+    return room;
+};
+
+const broadcastTraffic = (domain, room) => {
+    io.to(domain).emit('traffic', {
+        currentUsers: room.currentUsers,
+        maxCurrentUsers: room.maxCurrentUsers,
+        maxReachedAt: room.maxReachedAt
+    });
+};
+
+io.on('connection', (socket) => {
+    const domain = socket.handshake.headers.origin;
+    const room = findOrCreateRoom(domain);
 
     room.currentUsers++;
     if (room.currentUsers > room.maxCurrentUsers) {
@@ -36,45 +48,13 @@ io.on('connection', (socket) => {
     }
 
     socket.join(domain);
-
-    updateUserActivity(socket);
-
-    const broadcastTraffic = () => {
-        io.to(domain).emit('traffic', {
-            currentUsers: room.currentUsers,
-            maxCurrentUsers: room.maxCurrentUsers,
-            maxReachedAt: room.maxReachedAt
-        });
-    };
-
-    broadcastTraffic();
-
-    socket.on('activity', () => {
-        updateUserActivity(socket);
-    });
+    broadcastTraffic(domain, room);
 
     socket.on('disconnect', () => {
         room.currentUsers--;
-        broadcastTraffic();
+        broadcastTraffic(domain, room);
     });
 });
-
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
-
-const updateUserActivity = (socket) => {
-    socket.lastActivity = Date.now();
-};
-
-const checkInactiveUsers = () => {
-    const now = Date.now();
-    io.sockets.sockets.forEach((socket) => {
-        if (now - socket.lastActivity > INACTIVITY_TIMEOUT) {
-            socket.disconnect(true);
-        }
-    });
-};
-
-setInterval(checkInactiveUsers, INACTIVITY_TIMEOUT);
 
 app.get('/stats', (req, res) => {
     res.send(roomStats);
