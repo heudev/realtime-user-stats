@@ -1,32 +1,32 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const helmet = require('helmet');
 const connectDB = require('./config/database');
 const statsRoutes = require('./routes/stats');
 const SocketService = require('./services/socketService');
+const roomService = require('./services/roomService');
 
-// Create Express application
 const app = express();
 const server = http.createServer(app);
 
-// Setup Socket.io
 const io = socketIo(server, {
     cors: {
         origin: '*',
     }
 });
 
-// Connect to MongoDB
 connectDB();
 
-// Initialize Socket service
+app.use(helmet());
+
 new SocketService(io);
 
-// Routes
 app.use('/stats', statsRoutes);
 
-// Start server
 const PORT = process.env.PORT || 3002;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
+    await roomService.resetAllRoomUsers();
     console.log(`Server is running on port ${PORT}`);
 }); 
