@@ -2,17 +2,21 @@
   "name": "realtime-user-stats",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "moment-timezone": "^0.5.46",
-    "socket.io": "^4.8.1"
+    "express": "^4.18.2",
+    "moment-timezone": "^0.5.43",
+    "mongoose": "^8.1.1",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
   }
 }
