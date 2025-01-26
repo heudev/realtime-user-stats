@@ -1,7 +1,11 @@
 const moment = require('moment-timezone');
 
-const getCurrentTimeInTRT = () => moment().tz('Europe/Istanbul').format();
+moment.tz.setDefault('Europe/Istanbul');
+
+const formatDateToTurkish = (date) => {
+    return moment(date).format('DD MMMM YYYY HH:mm:ss');
+};
 
 module.exports = {
-    getCurrentTimeInTRT
-}; 
+    formatDateToTurkish
+};
