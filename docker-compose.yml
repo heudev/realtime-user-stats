@@ -9,6 +9,7 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/realtime-stats
     depends_on:
       - mongodb
+    restart: always
 
   mongodb:
     image: mongo:latest
@@ -16,6 +17,7 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    restart: always
 
 volumes:
   mongodb_data:
